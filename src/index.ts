@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import RoutesRouter from "./routes";
 import mongoose from "mongoose";
@@ -26,6 +26,12 @@ const connectDB = async (): Promise<void> => {
 };
 connectDB();
 // ********* MongoDB Connection Completed *********
+
+// Global Error Handler
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error("Error:", err.message);
+  res.status(500).json({ message: "Internal Server Error" });
+});
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
