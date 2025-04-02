@@ -2,6 +2,7 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import RoutesRouter from "./routes";
 import mongoose from "mongoose";
+import cors from "cors";
 
 dotenv.config();
 
@@ -9,6 +10,7 @@ const app: Express = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use("/", RoutesRouter);
 
