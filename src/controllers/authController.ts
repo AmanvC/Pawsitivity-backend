@@ -9,7 +9,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({ message: "User already exists!" });
+      res.status(400).json({ status: "FAILURE", message: "User already exists!" });
       return;
     }
 
@@ -22,7 +22,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       sessions: []
     })
 
-    res.status(201).json({ message: "User registered successfully." });
+    res.status(201).json({ status: "SUCCESS", message: "User registered successfully." });
   } catch (error) {
     next(error);
   }
@@ -34,7 +34,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     const user = await User.findOne({ email });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      res.status(400).json({ message: "Invalid credentials!" });
+      res.status(400).json({ status: "FAILURE", message: "Invalid credentials!" });
       return;
     }
 
@@ -42,6 +42,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     if (user.sessions.length > 0) {
       res.status(200).json({
+        status: "SUCCESS",
         message: "Already logged in elsewhere. Choose to continue here or logout previous device.",
         options: {
           continueHere: true,
@@ -54,7 +55,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     user.sessions.push({ token, device, loginTime: new Date() });
     await user.save();
 
-    res.json({ token, message: "Logged in successfully" });
+    res.json({ status: "SUCCESS", token, message: "Logged in successfully" });
   } catch (error) {
     next(error);
   }
@@ -66,7 +67,7 @@ export const forceLogin = async (req: Request, res: Response, next: NextFunction
     const user = await User.findOne({ email });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ status: "FAILURE", message: "Invalid credentials" });
       return;
     }
 
@@ -74,7 +75,7 @@ export const forceLogin = async (req: Request, res: Response, next: NextFunction
     user.sessions = [{ token, device, loginTime: new Date() }];
     await user.save();
 
-    res.json({ token, message: "Logged in and previous session logged out" });
+    res.json({ status: "SUCCESS", token, message: "Logged in and previous session logged out" });
   } catch (error) {
     next(error);
   }
@@ -86,14 +87,14 @@ export const logoutUser = async (req: Request, res: Response, next: NextFunction
     const user = await User.findOne({ "sessions.token": token });
 
     if (!user) {
-      res.status(400).json({ message: "Invalid session" })
+      res.status(400).json({ status: 'FAILURE', message: "Invalid session" })
       return;
     };
 
     user.sessions = user.sessions.filter((session) => session.token !== token);
     await user.save();
 
-    res.json({ message: "Logged out successfully" });
+    res.json({ status: 'SUCCESS', message: "Logged out successfully" });
   } catch (error) {
     next(error);
   }
@@ -105,13 +106,13 @@ export const logoutAllDevices = async (req: Request, res: Response, next: NextFu
     const user = await User.findOne({ email });
 
     if (!user) {
-      res.status(400).json({ message: "User not found" });
+      res.status(400).json({ status: "FAILURE", message: "User not found" });
       return;
     }
     user.sessions = [];
     await user.save();
 
-    res.json({ message: "Logged out from all devices" });
+    res.json({ status: "SUCCESS", message: "Logged out from all devices" });
   } catch (error) {
     next(error);
   }

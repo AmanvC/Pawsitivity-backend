@@ -1,28 +1,27 @@
-import mongoose, { Schema } from "mongoose";
-import { DogSchema, IDog } from "./Dog";
-import { DogGroupSchema, IDogGroup } from "./DogGroup";
+import mongoose, { Document, Types, Schema } from "mongoose";
 
-interface ICommunity {
-  createdBy: mongoose.Schema.Types.ObjectId;
-  lastUpdatedBy: mongoose.Schema.Types.ObjectId;
+interface ICommunity extends Document {
+  createdBy: Types.ObjectId;
+  lastUpdatedBy: Types.ObjectId;
   communityName: string;
   address: string;
   city: string;
   state: string;
   country: string;
   pincode: string;
-  dogGroups: IDogGroup[];
+  // dogGroups: IDogGroup[];
+  dogGroups: Types.ObjectId[];
 }
 
-const CommunitySchema: Schema<ICommunity> = new mongoose.Schema(
+const CommunitySchema = new Schema<ICommunity>(
   {
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true
     },
     lastUpdatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true
     },
@@ -50,7 +49,12 @@ const CommunitySchema: Schema<ICommunity> = new mongoose.Schema(
       type: String,
       required: true
     },
-    dogGroups: [DogGroupSchema]
+    // dogGroups: [DogGroupSchema]
+    dogGroups: [{
+      type: Schema.Types.ObjectId,
+      ref: "DogGroup",
+      required: true
+    }]
   },
   { timestamps: true }
 )

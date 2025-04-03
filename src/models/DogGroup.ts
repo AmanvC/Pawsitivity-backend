@@ -1,15 +1,16 @@
 import mongoose, { Schema } from "mongoose";
 import { DogSchema, IDog } from "./Dog";
 
-export interface IDogGroup {
+interface IDogGroup {
   createdBy: mongoose.Schema.Types.ObjectId;
   lastUpdatedBy: mongoose.Schema.Types.ObjectId;
   community: mongoose.Schema.Types.ObjectId;
   groupName: string;
-  dogs: IDog[];
+  // dogs: IDog[];
+  dogs: mongoose.Schema.Types.ObjectId[];
 }
 
-export const DogGroupSchema: Schema<IDogGroup> = new mongoose.Schema(
+const DogGroupSchema: Schema<IDogGroup> = new mongoose.Schema(
   {
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +31,12 @@ export const DogGroupSchema: Schema<IDogGroup> = new mongoose.Schema(
       type: String,
       required: true
     },
-    dogs: [DogSchema]
+    // dogs: [DogSchema]
+    dogs: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Dog",
+      required: true
+    }]
   },
   { timestamps: true }
 )

@@ -1,49 +1,37 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
-interface IVaccinationDetail {
-  vaccinationName: string;
-  veterinaryName?: string;
-  vaccinationDate?: Date;
-}
-
-export interface IDog {
-  createdBy: mongoose.Schema.Types.ObjectId;
-  lastUpdatedBy: mongoose.Schema.Types.ObjectId;
-  community: mongoose.Schema.Types.ObjectId;
-  dogGroup: mongoose.Schema.Types.ObjectId;
+export interface IDog extends Document {
+  createdBy: Types.ObjectId;
+  lastUpdatedBy: Types.ObjectId;
+  community: Types.ObjectId;
+  dogGroup: Types.ObjectId;
   dogName: string;
   dob?: Date;
   abcStatus: boolean;
   vaccinationStatus: boolean;
   image: string;
-  vaccinationDetails: IVaccinationDetail[]
+  vaccinationDetails: Types.ObjectId[]
 }
 
-const VaccinationDetailSchema: Schema<IVaccinationDetail> = new mongoose.Schema({
-  vaccinationName: { type: String, required: true },
-  veterinaryName: { type: String },
-  vaccinationDate: { type: Date }
-});
-
-export const DogSchema: Schema<IDog> = new mongoose.Schema(
+export const DogSchema = new Schema<IDog>(
   {
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true
     },
     lastUpdatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true
     },
     community: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Community",
       required: true
     },
     dogGroup: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "DogGroup",
       required: true
     },
@@ -66,7 +54,11 @@ export const DogSchema: Schema<IDog> = new mongoose.Schema(
       type: String,
       required: true
     },
-    vaccinationDetails: [VaccinationDetailSchema]
+    vaccinationDetails: [{
+      type: Schema.Types.ObjectId,
+      ref: "Vaccination",
+      required: true
+    }]
   },
   { timestamps: true }
 );
