@@ -5,6 +5,6 @@ import upload from "../../../configs/multerConfig";
 
 const dogRouter = express.Router();
 
-dogRouter.post("/create", verifyToken,  upload.single("image"), createDog);
+dogRouter.post("/create", upload.single("image"), createDog);
 
 export default dogRouter;

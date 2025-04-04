@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken";
+import Community from "../models/Community";
+import { ObjectId, Types } from "mongoose";
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -30,15 +32,13 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, device } = req.body;
-    const user = await User.findOne({ email });
+    const { email: reqEmail, password: reqPassword, device } = req.body;
+    const user = await User.findOne({ email: reqEmail })
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcrypt.compare(reqPassword, user.password))) {
       res.status(400).json({ status: "FAILURE", message: "Invalid credentials!" });
       return;
     }
-
-    const token = generateToken(user.id);
 
     if (user.sessions.length > 0) {
       res.status(200).json({
@@ -51,6 +51,10 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       });
       return;
     }
+
+    const { name, email, id } = user.toObject();
+
+    const token = generateToken({name, email, id});
 
     user.sessions.push({ token, device, loginTime: new Date() });
     await user.save();

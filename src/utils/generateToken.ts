@@ -1,7 +1,13 @@
 import jwt from "jsonwebtoken";
 
-const generateToken = (userId: string): string => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET as string, {
+interface IUserToken {
+  id: string;
+  name: string;
+  email: string;
+}
+
+const generateToken = (data: IUserToken): string => {
+  return jwt.sign({ data }, process.env.JWT_SECRET as string, {
     expiresIn: "15d",
   });
 };

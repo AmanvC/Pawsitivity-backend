@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface ISession {
   token: string;
@@ -11,6 +11,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   sessions: ISession[];
+  joinedCommunities: Types.ObjectId[];
 }
 
 const SessionSchema = new Schema<ISession>(
@@ -46,6 +47,11 @@ const UserSchema = new Schema<IUser>(
       required: true
     },
     sessions: [SessionSchema],
+    joinedCommunities: [{
+      type: Schema.Types.ObjectId,
+      ref: "Community",
+      required: true
+    }]
   },
   { timestamps: true }
 );
