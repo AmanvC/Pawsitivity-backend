@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongoose";
 
-interface IUserToken {
-  id: string;
+export interface IUserToken {
+  id: ObjectId;
   name: string;
   email: string;
+  joinedCommunities: { _id: ObjectId, communityName: string }[]
 }
 
 const generateToken = (data: IUserToken): string => {

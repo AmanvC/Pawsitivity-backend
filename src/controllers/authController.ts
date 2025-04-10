@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
-import generateToken from "../utils/generateToken";
+import generateToken, { IUserToken } from "../utils/generateToken";
 import Community from "../models/Community";
 import { ObjectId, Types } from "mongoose";
 
@@ -33,7 +33,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email: reqEmail, password: reqPassword, device } = req.body;
-    const user = await User.findOne({ email: reqEmail })
+    const user = await User.findOne({ email: reqEmail }).populate("joinedCommunities", "_id communityName");
 
     if (!user || !(await bcrypt.compare(reqPassword, user.password))) {
       res.status(400).json({ status: "FAILURE", message: "Invalid credentials!" });
@@ -52,9 +52,11 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       return;
     }
 
-    const { name, email, id } = user.toObject();
+    const { name, email, _id, joinedCommunities } = user.toObject();
+    const typedJoinedCommunities = joinedCommunities as unknown as IUserToken['joinedCommunities'];
+    const typedObjectId = _id as IUserToken['id'];
 
-    const token = generateToken({name, email, id});
+    const token = generateToken({name, email, id: typedObjectId, joinedCommunities: typedJoinedCommunities});
 
     user.sessions.push({ token, device, loginTime: new Date() });
     await user.save();
@@ -67,15 +69,18 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
 export const forceLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, device } = req.body;
-    const user = await User.findOne({ email });
+    const { email: reqEmail, password, device } = req.body;
+    const user = await User.findOne({ email: reqEmail }).populate("joinedCommunities", "_id communityName");
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       res.status(400).json({ status: "FAILURE", message: "Invalid credentials" });
       return;
     }
+    const { name, email, _id, joinedCommunities } = user.toObject();
+    const typedJoinedCommunities = joinedCommunities as unknown as IUserToken['joinedCommunities'];
+    const typedObjectId = _id as IUserToken['id'];
 
-    const token = generateToken(user.id);
+    const token = generateToken({name, email, id: typedObjectId, joinedCommunities: typedJoinedCommunities});
     user.sessions = [{ token, device, loginTime: new Date() }];
     await user.save();
 

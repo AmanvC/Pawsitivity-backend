@@ -18,25 +18,40 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-
-    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-
-      await User.updateOne(
-        { _id: decoded.id },
-        { $pull: { sessions: { token: token } } } // Remove expired token from session list
-      );
-
-      res.status(401).json({ status: "FAILURE", message: "Token expired", options: { logoutUser: true } });
-      return;
-    }
-    const user = await User.findById(decoded.id).select("-password");
+    const user = 
+      await User.findById(decoded.data.id).select("-password")
+      .populate({
+        path: "joinedCommunities",
+        select: "communityName dogGroups",
+        populate: {
+          path: "dogGroups",
+          select: "groupName dogs",
+          populate: {
+            path: "dogs",
+            select: "dogName"
+          }
+        }
+      })
     if(!user) {
       res.status(404).json({ status: "FAILURE", message: "User not found" });
       return;
     }
+
+    const isValidSession = user.sessions.filter(session => session.token === token);
+    if(!isValidSession.length) {
+      res.status(401).json({ status: "FAILURE", message: "Token expired", options: { logoutUser: true } });
+      return;
+    }
     req.user = user;
     next();
-  } catch (err) {
-    res.status(403).json({ status: "FAILURE", message: "Invalid token" });
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") {
+      const decoded = jwt.decode(token) as JwtPayload;
+      await User.updateOne(
+        { _id: decoded.data.id },
+        { $pull: { sessions: { token: token } } } // Remove expired token from session list
+      );
+    }
+    res.status(401).json({ status: "FAILURE", message: "Token expired", options: { logoutUser: true } });
   }
 };

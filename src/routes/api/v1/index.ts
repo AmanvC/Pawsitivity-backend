@@ -4,6 +4,7 @@ import communityRouter from "./community";
 import dogGroupRouter from "./dogGroup";
 import dogRouter from "./dog";
 import { verifyToken } from "../../../middlewares/authMiddleware";
+import commonRouter from "./common";
 
 const router = express.Router();
 
@@ -11,5 +12,6 @@ router.use("/auth", authRouter);
 router.use("/community", verifyToken, communityRouter);
 router.use("/dogGroup", verifyToken, dogGroupRouter);
 router.use("/dog", verifyToken, dogRouter);
+router.use("/common", verifyToken, commonRouter);
 
 export default router;
