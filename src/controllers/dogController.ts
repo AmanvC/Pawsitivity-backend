@@ -8,15 +8,12 @@ import { ObjectId } from "mongoose";
 
 export const createDog = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    console.log({"CREATE DOG API CALLED": "APIU"})
     if(!req.user) {
       res.status(400).json({status: "FAILURE", message: "User auth error!", options: {forceLogout: true}})
       return;
     }
-    console.log({file: req.file})
     const imageUrl = req.file?.path || '';
     const { communityId, dogGroupId, dogName, dob, abcStatus, vaccinationStatus, vaccinationDetails } = req.body;
-    console.log({dob})
     const community = await Community.findById(communityId);
     const dogGroup = await DogGroup.findById(dogGroupId);
     if(!community || !dogGroup) {
@@ -37,7 +34,6 @@ export const createDog = async (req: AuthRequest, res: Response, next: NextFunct
       })
       vaccinationObjectIdList.push(obj._id);
     }
-    console.log({imageUrl})
     const newDog = await Dog.create({
       createdBy: req.user._id,
       lastUpdatedBy: req.user._id,
@@ -61,7 +57,6 @@ export const createDog = async (req: AuthRequest, res: Response, next: NextFunct
 export const getAllDogsForACommunity = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { communityId } = req.body;
-    console.log({body: req.body})
     if(!communityId) {
       res.status(400).json({ status: "FAILURE", message: "Invalid params, communityId missing!" });
       return;

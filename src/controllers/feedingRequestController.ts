@@ -63,8 +63,12 @@ export const getAllPendingFeedingRequests = async (req: AuthRequest, res: Respon
     const allPendingFeedingRequestsForACommunity = 
       await FeedingRequest.find({ "requestStatus.status": EFeedingRequestStatus.PENDING })
       .populate({
+        path: "createdBy",
+        select: "-_id name"
+      })
+      .populate({
         path: "dogGroup",
-        select: "-_id dogs",
+        select: "-_id dogs groupName",
         populate: {
           path: "dogs",
           select: "-_id dogName"
@@ -119,7 +123,24 @@ export const getAllUserCreatedFeedingRequests = async (req: AuthRequest, res: Re
       res.status(400).json({status: "FAILURE", message: "User auth error!", options: {forceLogout: true}})
       return;
     }
-    const allUserCreatedRequests = await FeedingRequest.find({"createdBy": req.user._id});
+    const allUserCreatedRequests = 
+      await FeedingRequest.find({"createdBy": req.user._id})
+      .populate({
+        path: "requestStatus",
+        select: "-_id",
+        populate: {
+          path: "acceptedBy",
+          select: "-_id name"
+        }
+      })
+      .populate({
+        path: "dogGroup",
+        select: "-_id dogs groupName",
+        populate: {
+          path: "dogs",
+          select: "-_id dogName"
+        }
+      });
     res.status(200).json({ status: "SUCCESS", data: allUserCreatedRequests });
   } catch (err) {
     next(err);
@@ -132,7 +153,20 @@ export const getAllUserAcceptedFeedingRequests = async (req: AuthRequest, res: R
       res.status(400).json({status: "FAILURE", message: "User auth error!", options: {forceLogout: true}})
       return;
     }
-    const allUserAcceptedRequests = await FeedingRequest.find({ $and: [{"requestStatus.status": EFeedingRequestStatus.ACCEPTED}, {"requestStatus.acceptedBy": req.user._id}]});
+    const allUserAcceptedRequests = 
+    await FeedingRequest.find({ $and: [{"requestStatus.status": EFeedingRequestStatus.ACCEPTED}, {"requestStatus.acceptedBy": req.user._id}]})
+    .populate({
+      path: "createdBy",
+      select: "-_id name"
+    })
+    .populate({
+      path: "dogGroup",
+      select: "-_id dogs groupName",
+      populate: {
+        path: "dogs",
+        select: "-_id dogName"
+      }
+    });
     res.status(200).json({ status: "SUCCESS", data: allUserAcceptedRequests });
   } catch (err) {
     next(err);
