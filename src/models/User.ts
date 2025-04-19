@@ -12,6 +12,7 @@ export interface IUser extends Document {
   password: string;
   sessions: ISession[];
   joinedCommunities: Types.ObjectId[];
+  expoPushToken: string | null;
 }
 
 const SessionSchema = new Schema<ISession>(
@@ -51,7 +52,10 @@ const UserSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: "Community",
       required: true
-    }]
+    }],
+    expoPushToken: {
+      type: String
+    }
   },
   { timestamps: true }
 );
