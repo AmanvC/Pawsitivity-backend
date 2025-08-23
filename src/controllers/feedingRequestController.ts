@@ -4,6 +4,7 @@ import Community from "../models/Community";
 import DogGroup from "../models/DogGroup";
 import FeedingRequest, { EFeedingRequestStatus } from "../models/FeedingRequest";
 import { Schema } from "mongoose";
+import { sendPushNotification } from "../utils/sendPushNotifications";
 
 export const createFeedingRequest = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -91,14 +92,18 @@ export const acceptPendingFeedingRequest = async (req: AuthRequest, res: Respons
       res.status(400).json({ status: "FAILURE", message: "Invalid params!" });
       return;
     }
-    const validPendingRequest = await FeedingRequest.findOne({ _id: feedingRequestId, "requestStatus.status": EFeedingRequestStatus.PENDING });
+    const validPendingRequest = 
+      await FeedingRequest.findOne({ _id: feedingRequestId, "requestStatus.status": EFeedingRequestStatus.PENDING })
+      .populate({
+        path: "createdBy",
+        select: "_id expoPushToken"
+      })
     
     if(!validPendingRequest) {
       res.status(400).json({ status: "FAILURE", message: "Request already accpeted / does not exist!" });
       return;
     }
-
-    if (validPendingRequest.createdBy.toString() === req.user.id) {
+    if ((validPendingRequest.createdBy as any)._id.toString() === req.user.id) {
       res.status(403).json({
         status: "FAILURE",
         message: "You cannot accept your own feeding request!"
@@ -110,7 +115,22 @@ export const acceptPendingFeedingRequest = async (req: AuthRequest, res: Respons
     validPendingRequest.requestStatus.acceptedBy = req.user._id as Schema.Types.ObjectId;
     validPendingRequest.requestStatus.acceptedOn = new Date();
 
-    await validPendingRequest.save();
+    // await validPendingRequest.save(); // TODO - AMAN Uncomment this!
+    const expoPushToken = (validPendingRequest.createdBy as any).expoPushToken
+    if(expoPushToken) {
+      const message = {
+        title: 'Woof Woof 🐶',
+        body: `Your feeding request was accepted by ${req.user.name}. Click here to view.`,
+        data: {
+          page: "CREATED_FEEDING_REQUESTS",
+          id: validPendingRequest._id,
+        },
+      };
+      await sendPushNotification(expoPushToken, message);
+    }
+
+    
+
     res.status(200).json({ status: "SUCCESS", message: "Feeding request accepted successfully!" });
   } catch(err) {
     next(err);

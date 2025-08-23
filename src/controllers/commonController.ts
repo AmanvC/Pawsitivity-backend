@@ -1,6 +1,7 @@
-import { NextFunction, Response } from "express";
-import { AuthRequest } from "middlewares/authMiddleware";
+import { NextFunction, Request, Response } from "express";
+import { AuthRequest } from "../middlewares/authMiddleware";
 import User from "../models/User";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export const getAllCommunityDogGroupsAndDogInfo = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -15,18 +16,15 @@ export const getAllCommunityDogGroupsAndDogInfo = async (req: AuthRequest, res: 
   }
 }
 
-export const saveExpoPushNotificationToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const saveExpoPushNotificationToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if(!req.user) {
-      res.status(400).json({status: "FAILURE", message: "User auth error!", options: {forceLogout: true}})
-      return;
-    }
-    const { pushToken } = req.body;
-    if(!pushToken) {
+    const { pushToken, token } = req.body;
+    if(!pushToken || !token) {
       res.status(400).json({ status: "FAILURE", message: "Invalid params, pushToken missing!" });
       return;
     }
-    await User.findByIdAndUpdate(req.user._id, {
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET || "") as JwtPayload;
+    await User.findByIdAndUpdate(decodedToken.data.id, {
       "expoPushToken": pushToken
     });
     res.status(200).json({ status: "SUCCESS", message: "Push token saved!" });

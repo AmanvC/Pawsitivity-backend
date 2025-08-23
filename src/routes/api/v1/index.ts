@@ -13,7 +13,7 @@ router.use("/auth", authRouter);
 router.use("/community", verifyToken, communityRouter);
 router.use("/dogGroup", verifyToken, dogGroupRouter);
 router.use("/dog", verifyToken, dogRouter);
-router.use("/common", verifyToken, commonRouter);
+router.use("/common", commonRouter);
 router.use("/feedingRequest", verifyToken, feedingRequestRouter);
 
 export default router;
