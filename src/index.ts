@@ -1,7 +1,7 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 dotenv.config({ 
-  path: process.env.NODE_ENV === "production" ? "../.env.production" : "../.env.development" 
+  path: process.env.NODE_ENV === "production" ? ".env.production" : ".env.development" 
 });
 import RoutesRouter from "./routes";
 import mongoose from "mongoose";
