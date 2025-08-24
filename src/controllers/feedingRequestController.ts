@@ -115,7 +115,7 @@ export const acceptPendingFeedingRequest = async (req: AuthRequest, res: Respons
     validPendingRequest.requestStatus.acceptedBy = req.user._id as Schema.Types.ObjectId;
     validPendingRequest.requestStatus.acceptedOn = new Date();
 
-    // await validPendingRequest.save(); // TODO - AMAN Uncomment this!
+    await validPendingRequest.save();
     const expoPushToken = (validPendingRequest.createdBy as any).expoPushToken
     if(expoPushToken) {
       const message = {
