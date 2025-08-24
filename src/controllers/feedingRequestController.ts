@@ -62,7 +62,11 @@ export const getAllPendingFeedingRequests = async (req: AuthRequest, res: Respon
       return;
     }
     const allPendingFeedingRequestsForACommunity = 
-      await FeedingRequest.find({ "requestStatus.status": EFeedingRequestStatus.PENDING })
+      await FeedingRequest.find({ 
+        $and: [
+          { "requestStatus.status": EFeedingRequestStatus.PENDING },
+          { "community": communityId }] 
+        })
       .populate({
         path: "createdBy",
         select: "-_id name"
