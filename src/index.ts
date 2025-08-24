@@ -1,6 +1,8 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ 
+  path: process.env.NODE_ENV === "production" ? "../.env.production" : "../.env.development" 
+});
 import RoutesRouter from "./routes";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -35,5 +37,5 @@ connectDB();
 // ********* MongoDB Connection Completed *********
 
 app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`🚀 Server running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode`);
 });
